@@ -8,18 +8,44 @@ const BASE_PATH: &str = "./testfiles";
 #[macro_use]
 extern crate rocket;
 
+
 #[derive(Responder)]
 #[response(status = 200, content_type = "image/png")]
 struct ImageTile(Vec<u8>);
 
 // Responds with image tile if there is one, otherwise 204
-#[get("/<var>/<year>/<month>/<day>/<x>/<y>/<z>")]
-fn index(var: &str, year: u16, month: u8, day: u8, x: i32, y: i32, z: u32) -> Result<ImageTile, NoContent> {
-    // TODO: Allow override via query params?
-    let lat_name = "latitude";
-    let lon_name = "longitude";
-    let max_value = 40.0;  // Scale values in image by this before converting to color
-    let gradient = colorous::VIRIDIS;
+#[get("/<var>/<year>/<month>/<day>/<x>/<y>/<z>?<max_value>&<lat_name>&<lon_name>&<gradient>")]
+fn index(
+    var: &str,
+    year: u16,
+    month: u8,
+    day: u8,
+    x: i32,
+    y: i32,
+    z: u32,
+    max_value: Option<f64>,
+    lat_name: Option<&str>,
+    lon_name: Option<&str>,
+    gradient: Option<&str>,
+) -> Result<ImageTile, NoContent> {
+    // Handle optional query params
+    let max_value = max_value.unwrap_or(10.0);
+    let lat_name = lat_name.unwrap_or("latitude");
+    let lon_name = lon_name.unwrap_or("longitude");
+    let gradient = match gradient {
+        Some("turbo") => colorous::TURBO,
+        Some("viridis") => colorous::VIRIDIS,
+        Some("inferno") => colorous::INFERNO,
+        Some("magma") => colorous::MAGMA,
+        Some("plasma") => colorous::PLASMA,
+        Some("cividis") => colorous::CIVIDIS,
+        Some("warm") => colorous::WARM,
+        Some("cool") => colorous::COOL,
+        Some("cubehelix") => colorous::CUBEHELIX,
+        Some("rainbow") => colorous::RAINBOW,
+        Some("sinebow") => colorous::SINEBOW,
+        _ => colorous::VIRIDIS,
+    };
 
     let dset_path = format!("{}/{}/{:02}/{:02}/polymer_mosaic_output.nc", BASE_PATH, year, month, day);
     let dset_path = Path::new(&dset_path[..]);

@@ -12,7 +12,7 @@
       coords.y = max_y_for_z - coords.y;
 
       // TODO: Date should be dynamic
-      return `http://127.0.0.1:8000/chl_conc/2023/06/08/${coords.x}/${coords.y}/${coords.z}`;
+      return `http://127.0.0.1:8000/chl_conc/2023/06/08/${coords.x}/${coords.y}/${coords.z}?max_value=40&gradient=turbo`;
     },
     getAttribution: function () {
       return "<a href='https://hakai.org'>Hakai + SpectralLab</a>"
