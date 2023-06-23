@@ -2,6 +2,8 @@
 
 A small demo of an on-the-fly NetCDF to TMS tile server using Rust and Leaflet
 
+![Screenshot](assets/img.png)
+
 ## Getting Started
 
 ### Prerequisites
