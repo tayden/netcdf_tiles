@@ -65,7 +65,7 @@ impl Dataset {
 }
 
 
-pub fn get_tile(dset_path: &Path, tx: i32, ty: i32, zoom: u32, var_name: &str, lat_name: &str, lon_name: &str) -> anyhow::Result<image::GrayImage> {
+pub fn get_tile(dset_path: &Path, tx: i32, ty: i32, zoom: u32, var_name: &str, lat_name: &str, lon_name: &str) -> anyhow::Result<Vec<f64>> {
     let mercator = GlobalMercator::new(TILE_SIZE as u32);
 
     let dset = Dataset::new(dset_path, lat_name, lon_name)?;
@@ -79,13 +79,13 @@ pub fn get_tile(dset_path: &Path, tx: i32, ty: i32, zoom: u32, var_name: &str, l
     let tile_y_delta = (tile_bounds.3 - tile_bounds.1) / (TILE_SIZE as f64);
 
     // Create result array and image
-    let mut result = [0 as f64; TILE_SIZE * TILE_SIZE];
-    let mut imgbuf = image::GrayImage::new(TILE_SIZE as u32, TILE_SIZE as u32);
+    let mut result = vec![0.0; TILE_SIZE * TILE_SIZE];
 
     // Check if bounds intersect
     if dset_bounds[0] > tile_bounds.2 || dset_bounds[2] < tile_bounds.0 || dset_bounds[1] > tile_bounds.3 || dset_bounds[3] < tile_bounds.1 {
+        // TODO: Return None to allow sending No Content 204 response
         println!("No intersection");
-        return Ok(imgbuf)
+        return Ok(result)
     }
 
     // Get intersection bounds
@@ -116,8 +116,10 @@ pub fn get_tile(dset_path: &Path, tx: i32, ty: i32, zoom: u32, var_name: &str, l
     // println!("dec_y: {:?}, dec_x: {:?}", dec_y, dec_x);
 
     if dec_y == 0 || dec_x == 0 {
+        // TODO: Return None to allow sending No Content 204 response
+        // TODO: Bilinear upsampling?
         println!("Too much zoom");
-        return Ok(imgbuf);
+        return Ok(result);
     }
 
     // Decimate the data
@@ -129,11 +131,5 @@ pub fn get_tile(dset_path: &Path, tx: i32, ty: i32, zoom: u32, var_name: &str, l
     }
     // println!("result: {:?}", result);
 
-    // Convert to floating point image
-    for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
-        let val = result[(y * TILE_SIZE as u32 + x) as usize] * 255.0;
-        *pixel = image::Luma([val as u8]);
-    }
-
-    Ok(imgbuf)
+    Ok(result)
 }

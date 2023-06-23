@@ -1,0 +1,1 @@
+This directory is a bare-bones Svelte + Vite app for displaying the tiles from the API on a Leaflet map.

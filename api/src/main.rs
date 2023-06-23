@@ -1,7 +1,8 @@
 use std::io::Cursor;
 use std::path::Path;
 
-const BASE_PATH: &str = "/home/taylor/CLionProjects/netcdf_tiles/testfiles";
+// TODO: Needs to be able to configure with env variables
+const BASE_PATH: &str = "./testfiles";
 
 #[macro_use]
 extern crate rocket;
@@ -23,29 +24,30 @@ fn index(var: &str, year: u16, month: u8, day: u8, x: i32, y: i32, z: u32) -> Im
 
     // Get tile
     let data = tiler::get_tile(dset_path, x, y, z, var, lat_name, lon_name).unwrap();
-    println!("data: {:?}", data);
-    // let gradient = colorous::VIRIDIS;
-    // let max_value = 40.0;
-    // let colors = data.iter().map(|v| {
-    //     match v {
-    //         x if *x < 0.0001 => None,
-    //         _ => Some(gradient.eval_continuous(v / max_value)),
-    //     }
-    // }).collect::<Vec<Option<colorous::Color>>>();
+    // println!("data: {:?}", data);
+    let gradient = colorous::VIRIDIS;
+    let max_value = 10.0;
+    let colors = data.iter().map(|v| {
+        match v {
+            x if *x < 0.0001 => None,
+            _ => Some(gradient.eval_continuous(v / max_value)),
+        }
+    }).collect::<Vec<Option<colorous::Color>>>();
     // println!("colors: {:?}", colors);
-    // let mut imgbuf = image::RgbaImage::new(tiler::TILE_SIZE as u32, tiler::TILE_SIZE as u32);
-    // // Convert to floating point image
-    // for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
-    //     if let Some(val) = colors[(y * tiler::TILE_SIZE as u32 + x) as usize] {
-    //         *pixel = image::Rgba([val.r, val.g, val.b, 255]);
-    //         println!("{} {} {}", val.r, val.g, val.b);
-    //     }
-    // }
-    //
-    // // Write bytes
+
+    let mut imgbuf = image::RgbaImage::new(tiler::TILE_SIZE as u32, tiler::TILE_SIZE as u32);
+    // Convert to floating point image
+    for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
+        if let Some(val) = colors[(y * tiler::TILE_SIZE as u32 + x) as usize] {
+            *pixel = image::Rgba([val.r, val.g, val.b, 255]);
+            // println!("{} {} {}", val.r, val.g, val.b);
+        }
+    }
+
+    // Write bytes
     let mut bytes: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-    // imgbuf.write_to(&mut bytes, image::ImageOutputFormat::from(image::ImageFormat::Png)).unwrap();
-    //
+    imgbuf.write_to(&mut bytes, image::ImageOutputFormat::from(image::ImageFormat::Png)).unwrap();
+
     let bytes = bytes.into_inner();
     ImageTile(bytes)
 }
