@@ -2,7 +2,8 @@
   import L from 'leaflet';
 
   let map;
-  const initialView = [39.8283, -98.5795];
+  const initialView = [49, -123];
+  const initialZoom = 7;
 
   // BEGIN SECTION OF INTEREST
   L.TileLayer.ChlConc = L.TileLayer.extend({
@@ -24,19 +25,18 @@
   // END SECTION OF INTEREST
 
   function createMap(container) {
-    let m = L.map(container, {preferCanvas: true}).setView(initialView, 5);
+    let m = L.map(container, {preferCanvas: true, maxZoom: 9 }).setView(initialView, initialZoom);
     L.tileLayer(
       'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
       {
         attribution: `&copy;<a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>,
 	        &copy;<a href="https://carto.com/attributions" target="_blank">CARTO</a>`,
         subdomains: 'abcd',
-        maxZoom: 9,
       },
     ).addTo(m);
 
     // Add the custom tile layer here
-    L.tileLayer.chl_conc({tms: true}).addTo(m);
+    L.tileLayer.chl_conc({tms: true, maxZoom: 9}).addTo(m);
 
     return m;
   }
