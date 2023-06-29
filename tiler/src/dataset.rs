@@ -1,5 +1,5 @@
 use std::path::Path;
-use globalmaptile::GlobalMercator;
+use webmerc::GlobalMercator;
 use crate::bounds::Bounds;
 use crate::TILE_SIZE;
 
@@ -12,7 +12,7 @@ pub struct Dataset {
 impl Dataset {
     pub fn new(path: &Path, lat_name: &str, lon_name: &str) -> anyhow::Result<Self> {
         let file = netcdf::open(path)?;
-        let mercator = GlobalMercator::new(TILE_SIZE as u32);
+        let mercator = GlobalMercator::new(TILE_SIZE as u64);
 
         let lats = &file.variable(lat_name).expect("No latitude variable in dataset");
         let lats = lats.values_arr::<f64, _>(..)?;
@@ -22,11 +22,11 @@ impl Dataset {
 
         // Convert from WGS74 to Web Mercator (m)
         let lats_m = lats.iter().map(|lat| {
-            mercator.lat_lon_to_meters(*lat, lons[0]).1
+            mercator.lat_lon_to_meters(lons[0], *lat).1
         }).collect::<Vec<f64>>();
 
         let lons_m = lons.iter().map(|lon| {
-            mercator.lat_lon_to_meters(lats[0], *lon).0
+            mercator.lat_lon_to_meters(*lon, lats[0]).0
         }).collect::<Vec<f64>>();
 
         Ok(Self {

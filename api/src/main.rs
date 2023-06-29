@@ -3,6 +3,7 @@ use std::path::Path;
 use rocket::response::status::NoContent;
 
 // TODO: Needs to be able to configure with env variables
+
 const BASE_PATH: &str = "./testfiles";
 
 #[macro_use]
@@ -14,24 +15,25 @@ extern crate rocket;
 struct ImageTile(Vec<u8>);
 
 // Responds with image tile if there is one, otherwise 204
-#[get("/<var>/<year>/<month>/<day>/<x>/<y>/<z>?<max_value>&<lat_name>&<lon_name>&<gradient>")]
+#[get("/<var>/<year>/<month>/<day>/<x>/<y>/<z>?<max_value>&<lat_dim>&<lon_dim>&<gradient>")]
 fn index(
     var: &str,
     year: u16,
     month: u8,
     day: u8,
-    x: i32,
-    y: i32,
+    x: u32,
+    y: u32,
     z: u32,
     max_value: Option<f64>,
-    lat_name: Option<&str>,
-    lon_name: Option<&str>,
+    lat_dim: Option<&str>,
+    lon_dim: Option<&str>,
     gradient: Option<&str>,
 ) -> Result<ImageTile, NoContent> {
     // Handle optional query params
     let max_value = max_value.unwrap_or(10.0);
-    let lat_name = lat_name.unwrap_or("latitude");
-    let lon_name = lon_name.unwrap_or("longitude");
+    let lat_name = lat_dim.unwrap_or("latitude");
+    let lon_name = lon_dim.unwrap_or("longitude");
+    // TODO: This is gross and should be handled better
     let gradient = match gradient {
         Some("turbo") => colorous::TURBO,
         Some("viridis") => colorous::VIRIDIS,
@@ -44,6 +46,8 @@ fn index(
         Some("cubehelix") => colorous::CUBEHELIX,
         Some("rainbow") => colorous::RAINBOW,
         Some("sinebow") => colorous::SINEBOW,
+        Some("greens") => colorous::GREENS,
+        Some("bluegreen") => colorous::BLUE_GREEN,
         _ => colorous::VIRIDIS,
     };
 
@@ -65,8 +69,8 @@ fn index(
 
     data.iter().enumerate().for_each(|(i, v)| {
         if *v > 0.0 {
-            let x = (i % tiler::TILE_SIZE) as usize;
-            let y = (i / tiler::TILE_SIZE) as usize;
+            let x = i % tiler::TILE_SIZE;
+            let y = i / tiler::TILE_SIZE;
 
             let c = gradient.eval_continuous((*v / max_value).min(1.0).max(0.0));
             imgbuf.put_pixel(x as u32, y as u32, image::Rgba([c.r, c.g, c.b, 255]));
@@ -74,7 +78,7 @@ fn index(
     });
 
     // Write bytes
-    let mut bytes: Cursor<Vec<u8>> = Cursor::new(Vec::new());
+    let mut bytes = Cursor::new(Vec::new());
     imgbuf.write_to(&mut bytes, image::ImageOutputFormat::from(image::ImageFormat::Png)).unwrap();
 
     let bytes = bytes.into_inner();

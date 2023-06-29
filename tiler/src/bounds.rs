@@ -40,8 +40,11 @@ impl Bounds {
                   self.max_x + x_shift, self.max_y + y_shift)
     }
 
-    pub fn xy_len(&self) -> (f64, f64) {
-        (self.max_x - self.min_x, self.max_y - self.min_y)
+    pub fn xy_len(&self) -> (usize, usize) {
+        let x_len = (self.max_x - self.min_x).round() as usize;
+        let y_len = (self.max_y - self.min_y).round() as usize;
+
+        (x_len, y_len)
     }
 }
 
