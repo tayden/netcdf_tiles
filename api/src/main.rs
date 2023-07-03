@@ -1,6 +1,6 @@
+use rocket::response::status::NoContent;
 use std::io::Cursor;
 use std::path::Path;
-use rocket::response::status::NoContent;
 
 // TODO: Needs to be able to configure with env variables
 
@@ -8,7 +8,6 @@ const BASE_PATH: &str = "./testfiles";
 
 #[macro_use]
 extern crate rocket;
-
 
 #[derive(Responder)]
 #[response(status = 200, content_type = "image/png")]
@@ -51,7 +50,10 @@ fn index(
         _ => colorous::VIRIDIS,
     };
 
-    let dset_path = format!("{}/{}/{:02}/{:02}/polymer_mosaic_output.nc", BASE_PATH, year, month, day);
+    let dset_path = format!(
+        "{}/{}/{:02}/{:02}/polymer_mosaic_output.nc",
+        BASE_PATH, year, month, day
+    );
     let dset_path = Path::new(&dset_path[..]);
 
     // Get tile
@@ -79,7 +81,12 @@ fn index(
 
     // Write bytes
     let mut bytes = Cursor::new(Vec::new());
-    imgbuf.write_to(&mut bytes, image::ImageOutputFormat::from(image::ImageFormat::Png)).unwrap();
+    imgbuf
+        .write_to(
+            &mut bytes,
+            image::ImageOutputFormat::from(image::ImageFormat::Png),
+        )
+        .unwrap();
 
     let bytes = bytes.into_inner();
     Ok(ImageTile(bytes))

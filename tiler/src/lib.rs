@@ -1,7 +1,6 @@
-use std::cmp::{max, min};
-use std::path::Path;
 use bounds::Bounds;
 use dataset::Dataset;
+use std::path::Path;
 use webmerc::GlobalMercator;
 
 mod bounds;
@@ -9,13 +8,22 @@ mod dataset;
 
 pub const TILE_SIZE: usize = 256;
 
-
-pub fn get_tile(dset_path: &Path, tx: u32, ty: u32, zoom: u32, var_name: &str, lat_name: &str, lon_name: &str) -> anyhow::Result<Option<Vec<f64>>> {
+pub fn get_tile(
+    dset_path: &Path,
+    tx: u32,
+    ty: u32,
+    zoom: u32,
+    var_name: &str,
+    lat_name: &str,
+    lon_name: &str,
+) -> anyhow::Result<Option<Vec<f64>>> {
     let mercator = GlobalMercator::new(TILE_SIZE as u64);
 
     let dset = Dataset::new(dset_path, lat_name, lon_name)?;
     let dset_bounds = dset.get_bounds();
-    let tile_bounds: Bounds = mercator.tile_bounds(tx as u64, ty as u64, zoom as u64).into();
+    let tile_bounds: Bounds = mercator
+        .tile_bounds(tx as u64, ty as u64, zoom as u64)
+        .into();
 
     // Get the meter distance between result pixels
     let (tile_x_delta, tile_y_delta) = tile_bounds.get_pixel_lengths(TILE_SIZE, TILE_SIZE);
@@ -51,7 +59,7 @@ pub fn get_tile(dset_path: &Path, tx: u32, ty: u32, zoom: u32, var_name: &str, l
 
     // Get decimation factors
     let dec_y: usize = values.shape()[0] / y_len;
-    let dec_x: usize  = values.shape()[1] / x_len;
+    let dec_x: usize = values.shape()[1] / x_len;
 
     if dec_y == 0 || dec_x == 0 {
         // TODO: Bilinear upsampling?

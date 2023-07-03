@@ -8,12 +8,21 @@ pub struct Bounds {
 
 impl Bounds {
     pub fn new(min_x: f64, min_y: f64, max_x: f64, max_y: f64) -> Self {
-        Self { min_x, min_y, max_x, max_y }
+        Self {
+            min_x,
+            min_y,
+            max_x,
+            max_y,
+        }
     }
 
     pub fn intersect(&self, other: &Self) -> Option<Self> {
         // If the two bounds don't intersect, return None
-        if self.min_x > other.max_x || self.max_x < other.min_x || self.min_y > other.max_y || self.max_y < other.min_y {
+        if self.min_x > other.max_x
+            || self.max_x < other.min_x
+            || self.min_y > other.max_y
+            || self.max_y < other.min_y
+        {
             return None;
         }
         // Else return the intersection
@@ -31,13 +40,21 @@ impl Bounds {
     }
 
     pub fn xy_scale(&self, x_scale: f64, y_scale: f64) -> Self {
-        Self::new(self.min_x * x_scale, self.min_y * y_scale,
-                  self.max_x * x_scale, self.max_y * y_scale)
+        Self::new(
+            self.min_x * x_scale,
+            self.min_y * y_scale,
+            self.max_x * x_scale,
+            self.max_y * y_scale,
+        )
     }
 
     pub fn xy_shift(&self, x_shift: f64, y_shift: f64) -> Self {
-        Self::new(self.min_x + x_shift, self.min_y + y_shift,
-                  self.max_x + x_shift, self.max_y + y_shift)
+        Self::new(
+            self.min_x + x_shift,
+            self.min_y + y_shift,
+            self.max_x + x_shift,
+            self.max_y + y_shift,
+        )
     }
 
     pub fn xy_len(&self) -> (usize, usize) {
@@ -58,7 +75,11 @@ impl std::ops::Sub for Bounds {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self {
-        Self::new(self.min_x - other.min_x, self.min_y - other.min_y,
-                  self.max_x - other.max_x, self.max_y - other.max_y)
+        Self::new(
+            self.min_x - other.min_x,
+            self.min_y - other.min_y,
+            self.max_x - other.max_x,
+            self.max_y - other.max_y,
+        )
     }
 }

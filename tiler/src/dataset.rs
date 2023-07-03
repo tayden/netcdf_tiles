@@ -1,7 +1,7 @@
-use std::path::Path;
-use webmerc::GlobalMercator;
 use crate::bounds::Bounds;
 use crate::TILE_SIZE;
+use std::path::Path;
+use webmerc::GlobalMercator;
 
 pub struct Dataset {
     lats: Vec<f64>,
@@ -14,20 +14,26 @@ impl Dataset {
         let file = netcdf::open(path)?;
         let mercator = GlobalMercator::new(TILE_SIZE as u64);
 
-        let lats = &file.variable(lat_name).expect("No latitude variable in dataset");
+        let lats = &file
+            .variable(lat_name)
+            .expect("No latitude variable in dataset");
         let lats = lats.values_arr::<f64, _>(..)?;
 
-        let lons = &file.variable(lon_name).expect("No longitude variable in dataset");
+        let lons = &file
+            .variable(lon_name)
+            .expect("No longitude variable in dataset");
         let lons = lons.values_arr::<f64, _>(..)?;
 
         // Convert from WGS74 to Web Mercator (m)
-        let lats_m = lats.iter().map(|lat| {
-            mercator.lat_lon_to_meters(lons[0], *lat).1
-        }).collect::<Vec<f64>>();
+        let lats_m = lats
+            .iter()
+            .map(|lat| mercator.lat_lon_to_meters(lons[0], *lat).1)
+            .collect::<Vec<f64>>();
 
-        let lons_m = lons.iter().map(|lon| {
-            mercator.lat_lon_to_meters(*lon, lats[0]).0
-        }).collect::<Vec<f64>>();
+        let lons_m = lons
+            .iter()
+            .map(|lon| mercator.lat_lon_to_meters(*lon, lats[0]).0)
+            .collect::<Vec<f64>>();
 
         Ok(Self {
             lats: lats_m,
@@ -46,12 +52,18 @@ impl Dataset {
     }
 
     fn get_dim_index(&self, dim: &Vec<f64>, val: f64) -> usize {
-        dim.iter().enumerate().min_by(|(_, a), (_, b)| {
-            (*a - val).abs().partial_cmp(&(*b - val).abs()).unwrap()
-        }).unwrap().0
+        dim.iter()
+            .enumerate()
+            .min_by(|(_, a), (_, b)| (*a - val).abs().partial_cmp(&(*b - val).abs()).unwrap())
+            .unwrap()
+            .0
     }
 
-    pub fn get_values(&self, var_name: &str, bounds: Bounds) -> anyhow::Result<ndarray::ArrayD<f64>> {
+    pub fn get_values(
+        &self,
+        var_name: &str,
+        bounds: Bounds,
+    ) -> anyhow::Result<ndarray::ArrayD<f64>> {
         let data = self.file.variable(var_name).unwrap();
 
         // Get start and end indices for lat and lon
