@@ -4,7 +4,7 @@ use std::path::Path;
 
 // TODO: Needs to be able to configure with env variables
 
-const BASE_PATH: &str = "./testfiles";
+const BASE_PATH: &str = "./testfiles/6_bin8_data";
 
 #[macro_use]
 extern crate rocket;
@@ -14,7 +14,7 @@ extern crate rocket;
 struct ImageTile(Vec<u8>);
 
 // Responds with image tile if there is one, otherwise 204
-#[get("/<var>/<year>/<month>/<day>/<x>/<y>/<z>?<max_value>&<lat_dim>&<lon_dim>&<gradient>")]
+#[get("/<var>/<year>/<month>/<day>/<x>/<y>/<z>?<min_value>&<max_value>&<log_scale>&<lat_dim>&<lon_dim>&<gradient>")]
 fn index(
     var: &str,
     year: u16,
@@ -23,16 +23,20 @@ fn index(
     x: u32,
     y: u32,
     z: u32,
+    min_value: Option<f64>,
     max_value: Option<f64>,
+    log_scale: Option<bool>,
     lat_dim: Option<&str>,
     lon_dim: Option<&str>,
     gradient: Option<&str>,
 ) -> Result<ImageTile, NoContent> {
     // Handle optional query params
+    let min_value = min_value.unwrap_or(0.0);
     let max_value = max_value.unwrap_or(10.0);
-    let lat_name = lat_dim.unwrap_or("latitude");
-    let lon_name = lon_dim.unwrap_or("longitude");
-    // TODO: This is gross and should be handled better
+    let log_scale = log_scale.unwrap_or(false);
+    let lat_name = lat_dim.unwrap_or("lat");
+    let lon_name = lon_dim.unwrap_or("lon");
+    // TODO: This is gross
     let gradient = match gradient {
         Some("turbo") => colorous::TURBO,
         Some("viridis") => colorous::VIRIDIS,
@@ -51,10 +55,11 @@ fn index(
     };
 
     let dset_path = format!(
-        "{}/{}/{:02}/{:02}/polymer_mosaic_output.nc",
+        "{}/{}/{:02}/{:02}/mosaic_bin8_output.nc",
         BASE_PATH, year, month, day
     );
     let dset_path = Path::new(&dset_path[..]);
+    println!("dset_path: {:?}", dset_path);
 
     // Get tile
     let data = match tiler::get_tile(dset_path, x, y, z, var, lat_name, lon_name) {
@@ -70,11 +75,18 @@ fn index(
     let mut imgbuf = image::RgbaImage::new(tiler::TILE_SIZE as u32, tiler::TILE_SIZE as u32);
 
     data.iter().enumerate().for_each(|(i, v)| {
-        if *v > 0.0 {
+        if *v > min_value {
             let x = i % tiler::TILE_SIZE;
             let y = i / tiler::TILE_SIZE;
 
-            let c = gradient.eval_continuous((*v / max_value).min(1.0).max(0.0));
+            let c = if log_scale {
+                let v = (*v).log10();
+                let v = (v - min_value.log10()) / (max_value.log10() - min_value.log10());
+                gradient.eval_continuous(v)
+            } else {
+                let v = (*v - min_value) / (max_value - min_value);
+                gradient.eval_continuous(v)
+            };
             imgbuf.put_pixel(x as u32, y as u32, image::Rgba([c.r, c.g, c.b, 255]));
         }
     });
