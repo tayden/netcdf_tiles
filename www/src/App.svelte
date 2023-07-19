@@ -17,7 +17,7 @@
     });
 
     L.tileLayer.chl_conc = function () {
-        return new L.TileLayer.ChlConc();
+        return new L.TileLayer.ChlConc({ maxNativeZoom: 9 });
     }
 
     // END SECTION OF INTEREST
