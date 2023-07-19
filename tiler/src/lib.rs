@@ -39,7 +39,6 @@ pub fn get_tile(
     };
 
     // Read the intersection data
-    // TODO: Try to decimate the read data here by passing a stride to get_value
     let values = dset.get_values(var_name, intersect_bounds)?;
 
     // Get the meter distance between result pixels
@@ -53,15 +52,6 @@ pub fn get_tile(
     // Get decimation factors
     let dec_y: f64 = (values.shape()[0] as f64) / y_len as f64;
     let dec_x: f64 = (values.shape()[1] as f64) / x_len as f64;
-
-    println!("v_shape: {:?}", values.shape());
-    println!("dec_y: {}, dec_x: {}", dec_y, dec_x);
-
-    // if dec_y == 0 || dec_x == 0 {
-    //     // TODO: Nearest upsampling?
-    //     // println!("Too much zoom");
-    //     return Ok(None);
-    // }
 
     // Decimate the data
     let mut yif = 0.0;
