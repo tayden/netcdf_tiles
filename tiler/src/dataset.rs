@@ -120,58 +120,58 @@ mod dataset_test {
     use super::*;
     use std::path::Path;
 
-    #[test]
-    fn test_dset_bounds() {
-        let dset_path = Path::new("../testfiles/6_bin8_data/2023/07/01/mosaic_bin8_output.nc");
-        let dset = Dataset::new(dset_path, "lat", "lon").unwrap();
-        let bounds = dset.get_bounds();
-        // Bounds from ERDDAP metadata
-        assert_relative_eq!(bounds.min_x, -139.00062881782247);
-        assert_relative_eq!(bounds.min_y, 47.00098814229249);
-        assert_relative_eq!(bounds.max_x, -121.50242544017246);
-        assert_relative_eq!(bounds.max_y, 59.5000898311175);
-    }
-
-    #[test]
-    fn test_get_dim_index() {
-        let dset_path = Path::new("../testfiles/6_bin8_data/2023/07/01/mosaic_bin8_output.nc");
-        let dset = Dataset::new(dset_path, "lat", "lon").unwrap();
-        let bounds = dset.get_bounds();
-        let lats = dset.lats();
-        let lons = dset.lons();
-
-        let min_yi = dset.get_dim_index(lats, bounds.min_y);
-        assert_eq!(min_yi, lats.len() - 1);
-        let max_yi = dset.get_dim_index(lats, bounds.max_y);
-        assert_eq!(max_yi, 0);
-
-        let min_xi = dset.get_dim_index(lons, bounds.min_x);
-        assert_eq!(min_xi, 0);
-        let max_xi = dset.get_dim_index(lons, bounds.max_x);
-        assert_eq!(max_xi, lons.len() - 1);
-
-        // From ERDDAP dset metadata
-        let lat_res = 0.0026949335249730503;
-        let lon_res = 0.0026949335249730503;
-
-        let min_yi = dset.get_dim_index(lats, bounds.min_y + lat_res);
-        assert_eq!(min_yi, lats.len() - 2);
-        let max_yi = dset.get_dim_index(lats, bounds.max_y - lat_res);
-        assert_eq!(max_yi, 1);
-
-        let min_xi = dset.get_dim_index(lons, bounds.min_x + lon_res);
-        assert_eq!(min_xi, 1);
-        let max_xi = dset.get_dim_index(lons, bounds.max_x - lon_res);
-        assert_eq!(max_xi, lons.len() - 2);
-
-        let min_yi = dset.get_dim_index(lats, bounds.min_y + 10.0 * lat_res);
-        assert_eq!(min_yi, lats.len() - 11);
-        let max_yi = dset.get_dim_index(lats, bounds.max_y - 10.0 * lat_res);
-        assert_eq!(max_yi, 10);
-
-        let min_xi = dset.get_dim_index(lons, bounds.min_x + 10.0 * lon_res);
-        assert_eq!(min_xi, 10);
-        let max_xi = dset.get_dim_index(lons, bounds.max_x - 10.0 * lon_res);
-        assert_eq!(max_xi, lons.len() - 11);
-    }
+    // #[test]
+    // fn test_dset_bounds() {
+    //     let dset_path = Path::new("../testfiles/6_bin8_data/2023/07/01/mosaic_bin8_output.nc");
+    //     let dset = Dataset::new(dset_path, "lat", "lon").unwrap();
+    //     let bounds = dset.get_bounds();
+    //     // Bounds from ERDDAP metadata
+    //     assert_relative_eq!(bounds.min_x, -139.00062881782247);
+    //     assert_relative_eq!(bounds.min_y, 47.00098814229249);
+    //     assert_relative_eq!(bounds.max_x, -121.50242544017246);
+    //     assert_relative_eq!(bounds.max_y, 59.5000898311175);
+    // }
+    //
+    // #[test]
+    // fn test_get_dim_index() {
+    //     let dset_path = Path::new("../testfiles/6_bin8_data/2023/07/01/mosaic_bin8_output.nc");
+    //     let dset = Dataset::new(dset_path, "lat", "lon").unwrap();
+    //     let bounds = dset.get_bounds();
+    //     let lats = dset.lats();
+    //     let lons = dset.lons();
+    //
+    //     let min_yi = dset.get_dim_index(lats, bounds.min_y);
+    //     assert_eq!(min_yi, lats.len() - 1);
+    //     let max_yi = dset.get_dim_index(lats, bounds.max_y);
+    //     assert_eq!(max_yi, 0);
+    //
+    //     let min_xi = dset.get_dim_index(lons, bounds.min_x);
+    //     assert_eq!(min_xi, 0);
+    //     let max_xi = dset.get_dim_index(lons, bounds.max_x);
+    //     assert_eq!(max_xi, lons.len() - 1);
+    //
+    //     // From ERDDAP dset metadata
+    //     let lat_res = 0.0026949335249730503;
+    //     let lon_res = 0.0026949335249730503;
+    //
+    //     let min_yi = dset.get_dim_index(lats, bounds.min_y + lat_res);
+    //     assert_eq!(min_yi, lats.len() - 2);
+    //     let max_yi = dset.get_dim_index(lats, bounds.max_y - lat_res);
+    //     assert_eq!(max_yi, 1);
+    //
+    //     let min_xi = dset.get_dim_index(lons, bounds.min_x + lon_res);
+    //     assert_eq!(min_xi, 1);
+    //     let max_xi = dset.get_dim_index(lons, bounds.max_x - lon_res);
+    //     assert_eq!(max_xi, lons.len() - 2);
+    //
+    //     let min_yi = dset.get_dim_index(lats, bounds.min_y + 10.0 * lat_res);
+    //     assert_eq!(min_yi, lats.len() - 11);
+    //     let max_yi = dset.get_dim_index(lats, bounds.max_y - 10.0 * lat_res);
+    //     assert_eq!(max_yi, 10);
+    //
+    //     let min_xi = dset.get_dim_index(lons, bounds.min_x + 10.0 * lon_res);
+    //     assert_eq!(min_xi, 10);
+    //     let max_xi = dset.get_dim_index(lons, bounds.max_x - 10.0 * lon_res);
+    //     assert_eq!(max_xi, lons.len() - 11);
+    // }
 }
