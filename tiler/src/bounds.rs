@@ -16,6 +16,22 @@ impl Bounds {
         }
     }
 
+    pub fn min_x(&self) -> f64 {
+        self.min_x
+    }
+
+    pub fn min_y(&self) -> f64 {
+        self.min_y
+    }
+
+    pub fn max_x(&self) -> f64 {
+        self.max_x
+    }
+
+    pub fn max_y(&self) -> f64 {
+        self.max_y
+    }
+
     pub fn intersect(&self, other: &Self) -> Option<Self> {
         // If the two bounds don't intersect, return None
         if self.min_x > other.max_x
@@ -81,5 +97,22 @@ impl std::ops::Sub for Bounds {
             self.max_x - other.max_x,
             self.max_y - other.max_y,
         )
+    }
+}
+
+
+#[cfg(test)]
+mod bounds_tests {
+    use super::*;
+
+    #[test]
+    fn test_intersect(){
+        let bounds1 = Bounds::new(0.0, 0.0, 10.0, 10.0);
+        let bounds2 = Bounds::new(5.0, 5.0, 15.0, 15.0);
+        let bounds12 = bounds1.intersect(&bounds2).unwrap();
+        assert_eq!(bounds12.min_x, 5.0);
+        assert_eq!(bounds12.min_y, 5.0);
+        assert_eq!(bounds12.max_x, 10.0);
+        assert_eq!(bounds12.max_y, 10.0);
     }
 }

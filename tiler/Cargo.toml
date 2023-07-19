@@ -7,6 +7,6 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.71"
+approx = "0.5.1"
 ndarray = "0.15.6"
 netcdf = "0.8.1"
-webmerc = "0.1.1"
